@@ -5,10 +5,10 @@ Titanium is an IDE written in C++ using Qt, that will help develop programs for 
 
 ### Features 
 Note: Most of these features are not implemented yet.
-*Compile to ez80 assembly, decompile .8xp files
-*Compile to C (using the CE SDK)
-*Compile to TI-BASIC, edit TI-BASIC programs.
-*Multiple files at once
-*Cross platform compatible
-*Beautiful dark interface
-*More to come!
+* Compile to ez80 assembly, decompile .8xp files
+* Compile to C (using the CE SDK)
+* Compile to TI-BASIC, edit TI-BASIC programs.
+* Multiple files at once
+* Cross platform compatible
+* Beautiful dark interface
+* More to come!
