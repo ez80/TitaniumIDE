@@ -105,12 +105,12 @@ void MainWindow::newDocument() {
     QLayout *l = new QVBoxLayout (newTab);
     l->setContentsMargins(0,0,0,0);
     newTab->setStyleSheet("border 1px solid red;");
-    textEdit->setParent(newTab);
-    textEdit->setFocusPolicy(Qt::ClickFocus);
-    textEdit->setStyleSheet("color:white;");
     newTab->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-    textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     newTab->setLayout(l);
+    textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    textEdit->setStyleSheet("color:white;");
+    textEdit->setFocusPolicy(Qt::ClickFocus);
+    textEdit->setParent(newTab);
 
     //textEdit->setFrameStyle(0);
     int tabNumber = tabs->addTab(newTab,"New Document");
