@@ -1,11 +1,16 @@
-#include "titanium.h"
-#include <QApplication>
+#include <QtWidgets/QApplication>
 
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    titanium w;
-    w.show();
+#include "mainwindow.h"
 
-    return a.exec();
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    QCoreApplication::setOrganizationName(QStringLiteral("titanium-dev"));
+    QCoreApplication::setApplicationName(QStringLiteral("TitaniumIDE"));
+    app.setAttribute(Qt::AA_UseHighDpiPixmaps);
+
+    MainWindow TitaniumIDE;
+    TitaniumIDE.show();
+
+    return app.exec();
 }

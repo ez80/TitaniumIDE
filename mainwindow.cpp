@@ -1,75 +1,74 @@
-#include "titanium.h"
-#include "ui_titanium.h"
-#include <QMenu>
-#include <QFileDialog>
-#include <QTextStream>
+#include <QtWidgets/QShortcut>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QFileDialog>
+#include <QtCore/QTextStream>
 
-titanium::titanium(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::titanium)
-{
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+MainWindow::MainWindow(QWidget *p) : QMainWindow(p), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
+    /* register the connections */
+    connect(ui->fileButton, &QToolButton::clicked, this, &MainWindow::fileMenuClicked);
 
-    QAction *openKBShortcut = new QAction(this);
-    openKBShortcut->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
-    openKBShortcut->setShortcutContext(Qt::ApplicationShortcut);
-    ui->centralWidget->addAction(openKBShortcut);
-    connect(openKBShortcut, SIGNAL(triggered()), this, SLOT(open()));
+    /* populate the shortcuts */
+    QShortcut *KBopenShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_O), this);
+    QShortcut *KBsaveShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
+    QShortcut *KBnewDocShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_N), this);
 
-    QAction *saveKBShortcut = new QAction(this);
-    saveKBShortcut->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
-    saveKBShortcut->setShortcutContext(Qt::ApplicationShortcut);
-    ui->centralWidget->addAction(saveKBShortcut);
-    connect(saveKBShortcut, SIGNAL(triggered()), this, SLOT(save()));
+    KBopenShortcut->setAutoRepeat(false);
+    KBsaveShortcut->setAutoRepeat(false);
+    KBnewDocShortcut->setAutoRepeat(false);
 
-    QAction *newKBShortcut = new QAction(this);
-    newKBShortcut->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_N));
-    newKBShortcut->setShortcutContext(Qt::ApplicationShortcut);
-    ui->centralWidget->addAction(newKBShortcut);
-    connect(newKBShortcut, SIGNAL(triggered()), this, SLOT(newDocument()));
+    connect(KBopenShortcut, &QShortcut::activated, this, &MainWindow::open);
+    connect(KBsaveShortcut, &QShortcut::activated, this, &MainWindow::save);
+    connect(KBnewDocShortcut, &QShortcut::activated, this, &MainWindow::newDocument);
 }
 
-titanium::~titanium()
-{
+MainWindow::~MainWindow() {
     delete ui;
 }
 
-void titanium::on_fileButton_clicked()
-{
+void MainWindow::fileMenuClicked() {
     QMenu *menu=new QMenu();
     menu->setObjectName("fileMenu");
     menu->setStyleSheet("#fileMenu{ background-color: rgb(88, 88, 88); border:none; color:white; width:200px;} \n #fileMenu::item:selected {color:white; background-color: rgb(12, 94, 176); }");
     QPoint p = ui->fileButton->pos();
 
-    QRect widgetRect = ui->centralWidget->geometry();
-    widgetRect.moveTopLeft(ui->centralWidget->parentWidget()->mapToGlobal(widgetRect.topLeft()));
+    QRect widgetRect = ui->centralwidget->geometry();
+    widgetRect.moveTopLeft(ui->centralwidget->parentWidget()->mapToGlobal(widgetRect.topLeft()));
 
     menu->move(widgetRect.topLeft().x() + p.x(), widgetRect.topLeft().y()+ ui->frame->size().height()-2);
     QAction *newAction = menu->addAction("New");
-    connect(newAction, SIGNAL(triggered()), this, SLOT(newDocument()));
+    connect(newAction, &QAction::triggered, this, &MainWindow::newDocument);
 
     QAction *openAction =  menu->addAction("Open");
-    connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
+    connect(openAction, &QAction::triggered, this, &MainWindow::open);
 
     menu->addSeparator();
 
     QAction *saveAction = menu->addAction("Save");
-    connect(saveAction, SIGNAL(triggered()), this, SLOT(save()));
+    connect(saveAction, &QAction::triggered, this, &MainWindow::save);
 
     menu->show();
 }
-void titanium::save() {
-    QFileDialog  *select = new QFileDialog();
+
+void MainWindow::save() {
+    QFileDialog *select = new QFileDialog();
+    QString line;
     select->setLabelText(QFileDialog::Accept, QString("Save"));
     QString fileLocation = select->getSaveFileName(this,"Save","","TI-84+CE Programming (*.asm *.c *.txt *.h *.inc)");
     QFile data(fileLocation);
-    if (data.open(QFile::WriteOnly)) {
-        QTextStream out(&data);
-        out << ui->textEdit->toPlainText();
+    ui->textEdit->clear();
+    if (data.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream stream(&data);
+        stream << ui->textEdit->toPlainText();
     }
 }
-void titanium::open() {
+
+void MainWindow::open() {
     QFileDialog  *select = new QFileDialog();
     QString fileLocation = select->getOpenFileName(this,"Save","","TI-84+CE Programming (*.asm *.c *.txt *.h *.inc)");
     QTabWidget *tabs = ui->tabWidget;
@@ -83,9 +82,9 @@ void titanium::open() {
     newTab->setLayout(l);
 
     tabs->addTab(newTab,"Document");
-
 }
-void titanium::newDocument() {
+
+void MainWindow::newDocument() {
     QFileDialog  *select = new QFileDialog();
     QTabWidget *tabs = ui->tabWidget;
     QWidget *newTab = new QWidget();
