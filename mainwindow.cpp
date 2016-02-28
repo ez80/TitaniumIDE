@@ -98,7 +98,6 @@ void MainWindow::open() {
 }
 
 void MainWindow::newDocument() {
-    QFileDialog  *select = new QFileDialog();
     QTabWidget *tabs = ui->tabWidget;
     QWidget *newTab = new QWidget();
     QTextEdit *textEdit = new QTextEdit();
