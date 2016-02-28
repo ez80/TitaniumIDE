@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *p) : QMainWindow(p), ui(new Ui::MainWindow) {
     connect(KBopenShortcut, &QShortcut::activated, this, &MainWindow::open);
     connect(KBsaveShortcut, &QShortcut::activated, this, &MainWindow::save);
     connect(KBnewDocShortcut, &QShortcut::activated, this, &MainWindow::newDocument);
+    ui->tabWidget->removeTab(1);
 }
 
 MainWindow::~MainWindow() {
@@ -81,7 +82,19 @@ void MainWindow::open() {
     textEdit->setStyleSheet("color:white;");
     newTab->setLayout(l);
 
+    QFile file(fileLocation);
+
+
+    if(file.open(QIODevice::ReadOnly))
+    {
+    QTextStream instream(&file);
+    QString line = instream.readAll();
+    file.close();
+
     tabs->addTab(newTab,"Document");
+    textEdit->setText(line);
+    }
+
 }
 
 void MainWindow::newDocument() {
@@ -89,7 +102,7 @@ void MainWindow::newDocument() {
     QTabWidget *tabs = ui->tabWidget;
     QWidget *newTab = new QWidget();
     QTextEdit *textEdit = new QTextEdit();
-    QLayout *l = new QHBoxLayout (newTab);
+    QLayout *l = new QVBoxLayout (newTab);
     l->setContentsMargins(0,0,0,0);
     newTab->setStyleSheet("border 1px solid red;");
     textEdit->setParent(newTab);

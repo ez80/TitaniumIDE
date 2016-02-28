@@ -748,7 +748,7 @@
           <string notr="true">border:none;</string>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="elideMode">
           <enum>Qt::ElideLeft</enum>
@@ -770,7 +770,7 @@
            <string notr="true">border:none;</string>
           </property>
           <attribute name="title">
-           <string>Tab 1</string>
+           <string>New Document</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <property name="leftMargin">
@@ -805,11 +805,6 @@
             </widget>
            </item>
           </layout>
-         </widget>
-         <widget class="QWidget" name="tab_2">
-          <attribute name="title">
-           <string>Tab 2</string>
-          </attribute>
          </widget>
         </widget>
        </item>
