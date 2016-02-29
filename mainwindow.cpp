@@ -84,17 +84,14 @@ void MainWindow::open() {
 
     QFile file(fileLocation);
 
+    if(file.open(QIODevice::ReadOnly)) {
+        QTextStream instream(&file);
+        QString line = instream.readAll();
+        file.close();
 
-    if(file.open(QIODevice::ReadOnly))
-    {
-    QTextStream instream(&file);
-    QString line = instream.readAll();
-    file.close();
-
-    tabs->addTab(newTab,"Document");
-    textEdit->setText(line);
+        tabs->addTab(newTab,"Document");
+        textEdit->setText(line);
     }
-
 }
 
 void MainWindow::newDocument() {
@@ -104,14 +101,11 @@ void MainWindow::newDocument() {
     QLayout *l = new QVBoxLayout (newTab);
     l->setContentsMargins(0,0,0,0);
     newTab->setStyleSheet("border 1px solid red;");
-    newTab->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    newTab->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum);
     newTab->setLayout(l);
-    textEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    textEdit->setStyleSheet("color:white;");
     textEdit->setFocusPolicy(Qt::ClickFocus);
     textEdit->setParent(newTab);
 
-    //textEdit->setFrameStyle(0);
     int tabNumber = tabs->addTab(newTab,"New Document");
     tabs->setCurrentIndex(tabNumber);
 }
