@@ -17,6 +17,8 @@ private slots:
     void newDocument();
     void save();
     void open();
+    void newProject();
+    void saveProject();
 
 private:
     Ui::MainWindow *ui;
