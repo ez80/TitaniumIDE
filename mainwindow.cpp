@@ -256,27 +256,6 @@ void MainWindow::openProject(QString fileAddress) {
     xmlReader.clear();
     xmlFile.close();
     ui->tabWidget->setCurrentIndex(currentindex);
-/*
-    QTabWidget *tabs = ui->tabWidget;
-    QWidget *newTab = new QWidget();
-    QTextEdit *textEdit = new QTextEdit();
-    QLayout *l = new QGridLayout(newTab);
-    l->setContentsMargins(0,0,0,0);
-    textEdit->setParent(newTab);
-    textEdit->setFocusPolicy(Qt::ClickFocus);
-    textEdit->setStyleSheet("color:white;");
-    newTab->setLayout(l);
-
-    QFile file(fileAddress);
-
-    if(file.open(QIODevice::ReadOnly)) {
-        QTextStream instream(&file);
-        QString line = instream.readAll();
-        file.close();
-
-        tabs->addTab(newTab,"Document");
-        textEdit->setText(line);
-    }*/
 }
 QString MainWindow::projectDialog() {
     QFileDialog  *select = new QFileDialog();
