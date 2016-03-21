@@ -8,6 +8,7 @@
 #include "ui_mainwindow.h"
 #include <QInputDialog>
 #include <QXmlStreamWriter>
+#include <QDebug>
 QString projectDirectory;
 QString projectName;
 MainWindow::MainWindow(QWidget *p) : QMainWindow(p), ui(new Ui::MainWindow) {
@@ -25,7 +26,7 @@ MainWindow::MainWindow(QWidget *p) : QMainWindow(p), ui(new Ui::MainWindow) {
     KBsaveShortcut->setAutoRepeat(false);
     KBnewDocShortcut->setAutoRepeat(false);
 
-    connect(KBopenShortcut, &QShortcut::activated, this, &MainWindow::open);
+    connect(KBopenShortcut, &QShortcut::activated, this, &MainWindow::openDialog);
     connect(KBsaveShortcut, &QShortcut::activated, this, &MainWindow::saveProject);
     connect(KBnewDocShortcut, &QShortcut::activated, this, &MainWindow::newDocument);
     ui->tabWidget->clear();
@@ -45,16 +46,18 @@ void MainWindow::fileMenuClicked() {
     widgetRect.moveTopLeft(ui->centralwidget->parentWidget()->mapToGlobal(widgetRect.topLeft()));
 
     menu->move(widgetRect.topLeft().x() + p.x(), widgetRect.topLeft().y()+ ui->frame->size().height()-2);
-    QAction *newProject = menu->addAction("New Project");
-    connect(newProject, &QAction::triggered, this, &MainWindow::newProject);
-
     QAction *newAction = menu->addAction("New File");
     connect(newAction, &QAction::triggered, this, &MainWindow::newDocument);
 
     QAction *openAction =  menu->addAction("Open File");
-    connect(openAction, &QAction::triggered, this, &MainWindow::open);
-
+    connect(openAction, &QAction::triggered, this, &MainWindow::openDialog);
     menu->addSeparator();
+
+    QAction *newProject = menu->addAction("New Project");
+    connect(newProject, &QAction::triggered, this, &MainWindow::newProject);
+
+    QAction *projectOpen =  menu->addAction("Open Project");
+    connect(projectOpen, &QAction::triggered, this, &MainWindow::projectDialog);
 
     QAction *saveAction = menu->addAction("Save Project");
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveProject);
@@ -75,9 +78,18 @@ void MainWindow::save() {
     }
 }
 
-void MainWindow::open() {
+void MainWindow::openDialog() {
     QFileDialog  *select = new QFileDialog();
     QString fileLocation = select->getOpenFileName(this,"Open","","TI-84+CE Programming (*.asm *.c *.txt *.h *.inc)");
+    QFile file(fileLocation);
+    if(file.open(QIODevice::ReadOnly)) {
+        QTextStream instream(&file);
+        QString line = instream.readAll();
+        file.close();
+        addFile(fileLocation, line);
+    }
+}
+void MainWindow::addFile(QString fileLocation, QString line) {
     QTabWidget *tabs = ui->tabWidget;
     QWidget *newTab = new QWidget();
     QTextEdit *textEdit = new QTextEdit();
@@ -87,17 +99,8 @@ void MainWindow::open() {
     textEdit->setFocusPolicy(Qt::ClickFocus);
     textEdit->setStyleSheet("color:white;");
     newTab->setLayout(l);
-
-    QFile file(fileLocation);
-
-    if(file.open(QIODevice::ReadOnly)) {
-        QTextStream instream(&file);
-        QString line = instream.readAll();
-        file.close();
-
-        tabs->addTab(newTab,"Document");
-        textEdit->setText(line);
-    }
+    tabs->addTab(newTab,"Document");
+    textEdit->setText(line);
 }
 
 void MainWindow::newDocument() {
@@ -164,26 +167,96 @@ void MainWindow::saveProject() {
     QXmlStreamWriter xmlWriter(&file);
     xmlWriter.setAutoFormatting(true);
     xmlWriter.writeStartDocument();
-
-    xmlWriter.writeStartElement("general");
-    xmlWriter.writeTextElement("pname", projectName);
-    xmlWriter.writeEndElement();
-
-    for(int c=ui->tabWidget->count(); c>0; c--) {
+    xmlWriter.writeStartElement("project");
+    for(int c=0; c<(ui->tabWidget->count()); c++) {
         xmlWriter.writeStartElement("file");
         xmlWriter.writeTextElement("saved", "false");
-        xmlWriter.writeTextElement("name",  ui->tabWidget->tabText(c-1));
-        xmlWriter.writeTextElement("text",  ui->tabWidget->widget(c-1)->findChild<QTextEdit*>()->toPlainText());
+        xmlWriter.writeTextElement("name",  ui->tabWidget->tabText(c));
+        xmlWriter.writeTextElement("text",  ui->tabWidget->widget(c)->findChild<QTextEdit*>()->toPlainText()+"");
+        xmlWriter.writeTextElement("lang",  "null");
         xmlWriter.writeEndElement();
     }
+    xmlWriter.writeStartElement("general");
+    xmlWriter.writeTextElement("pname", projectName);
+    xmlWriter.writeTextElement("currentfile", QString::number(ui->tabWidget->currentIndex()));
+    xmlWriter.writeTextElement("directory", projectDirectory);
+    xmlWriter.writeEndElement();
+    xmlWriter.writeEndElement();
     file.close();
 }
 
-void MainWindow::openProject() {
-    /*QFileDialog  *select = new QFileDialog();
-    QString fileLocation = select->getOpenFileName(this,"Open","","Titanium IDE Project File (*.tIDE)");
+void MainWindow::openProject(QString fileAddress) {
+    ui->tabWidget->clear();
+    qDebug() << fileAddress;
+   QFile xmlFile(fileAddress);
+   if (!xmlFile.open(QFile::ReadOnly | QFile::Text))
+{
 
+}
+   QXmlStreamReader xmlReader;
+    xmlReader.setDevice(&xmlFile);
 
+    int currentindex = 0;
+    QString saved;
+    QString name;
+    QString text;
+    QString lang;
+    //Parse the XML until we reach end of it
+    while(!xmlReader.atEnd() && !xmlReader.hasError()) {
+            // Read next element
+            QXmlStreamReader::TokenType token = xmlReader.readNext();
+            //If token is just StartDocument - go to next
+            if(token == QXmlStreamReader::StartDocument) {
+                    continue;
+            }
+            //If token is StartElement - read it
+            if(token == QXmlStreamReader::StartElement) {
+
+                    if(xmlReader.name() == "general") {
+                            continue;
+                    }
+
+                    if(xmlReader.name() == "pname") {
+                        projectName= xmlReader.readElementText();
+                        ui->centralwidget->setWindowTitle(projectName);
+                    }
+                    if(xmlReader.name()=="directory") {
+                        projectDirectory=xmlReader.readElementText();
+                    }
+                    if(xmlReader.name() == "currentfile") {
+                       currentindex = xmlReader.readElementText().toInt();
+                    }
+                    if(xmlReader.name() == "file") {
+                        continue;
+                    }
+                    if(xmlReader.name() == "saved") {
+                        saved = xmlReader.readElementText();
+                    }
+                    if(xmlReader.name() == "name") {
+                        name = xmlReader.readElementText();
+                    }
+                    if(xmlReader.name() == "text") {
+                        text = xmlReader.readElementText();
+                    }
+                    if(xmlReader.name() == "lang") {
+                        lang = xmlReader.readElementText();
+                        addFile(name,text);
+                    }
+            }
+    }
+
+    if(xmlReader.hasError()) {
+            QMessageBox::critical(this,
+            "Project file corrupt!", "Unknown characters in file",
+            QMessageBox::Ok);
+            return;
+    }
+
+    //close reader and flush file
+    xmlReader.clear();
+    xmlFile.close();
+    ui->tabWidget->setCurrentIndex(currentindex);
+/*
     QTabWidget *tabs = ui->tabWidget;
     QWidget *newTab = new QWidget();
     QTextEdit *textEdit = new QTextEdit();
@@ -194,7 +267,7 @@ void MainWindow::openProject() {
     textEdit->setStyleSheet("color:white;");
     newTab->setLayout(l);
 
-    QFile file(fileLocation);
+    QFile file(fileAddress);
 
     if(file.open(QIODevice::ReadOnly)) {
         QTextStream instream(&file);
@@ -203,6 +276,11 @@ void MainWindow::openProject() {
 
         tabs->addTab(newTab,"Document");
         textEdit->setText(line);
-    }
-    */
+    }*/
+}
+QString MainWindow::projectDialog() {
+    QFileDialog  *select = new QFileDialog();
+    QString fileLocation = select->getOpenFileName(this,"Open","","Titanium IDE Project File (*.tIDE)");
+    openProject(fileLocation);
+    return fileLocation;
 }

@@ -16,9 +16,12 @@ private slots:
     void fileMenuClicked();
     void newDocument();
     void save();
-    void open();
+    void openDialog();
     void newProject();
     void saveProject();
+    void openProject(QString);
+    QString projectDialog();
+    void addFile(QString, QString);
 
 private:
     Ui::MainWindow *ui;
