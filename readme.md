@@ -11,4 +11,5 @@ Note: Most of these features are not implemented yet.
 * Multiple files at once
 * Cross platform compatible
 * Beautiful dark interface
+* Sprite Conversion
 * More to come!
