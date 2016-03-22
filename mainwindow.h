@@ -20,9 +20,10 @@ private slots:
     void newProject();
     void saveProject();
     void openProject(QString);
+    void closeProject();
     QString projectDialog();
     void addFile(QString, QString);
-
+    void renameFile();
 private:
     Ui::MainWindow *ui;
 };

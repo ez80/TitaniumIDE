@@ -9,6 +9,8 @@
 #include <QInputDialog>
 #include <QXmlStreamWriter>
 #include <QDebug>
+#include <QDialogButtonBox>
+
 QString projectDirectory;
 QString projectName;
 MainWindow::MainWindow(QWidget *p) : QMainWindow(p), ui(new Ui::MainWindow) {
@@ -30,6 +32,7 @@ MainWindow::MainWindow(QWidget *p) : QMainWindow(p), ui(new Ui::MainWindow) {
     connect(KBsaveShortcut, &QShortcut::activated, this, &MainWindow::saveProject);
     connect(KBnewDocShortcut, &QShortcut::activated, this, &MainWindow::newDocument);
     ui->tabWidget->clear();
+    ui->tabWidget->tabBar()->setDrawBase(false);
 }
 
 MainWindow::~MainWindow() {
@@ -51,6 +54,9 @@ void MainWindow::fileMenuClicked() {
 
     QAction *openAction =  menu->addAction("Open File");
     connect(openAction, &QAction::triggered, this, &MainWindow::openDialog);
+
+    QAction *renameAction =  menu->addAction("Rename File");
+    connect(renameAction, &QAction::triggered, this, &MainWindow::renameFile);
     menu->addSeparator();
 
     QAction *newProject = menu->addAction("New Project");
@@ -62,6 +68,8 @@ void MainWindow::fileMenuClicked() {
     QAction *saveAction = menu->addAction("Save Project");
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveProject);
 
+    QAction *closeAction = menu->addAction("Close Project");
+    connect(closeAction, &QAction::triggered, this, &MainWindow::closeProject);
     menu->show();
 }
 
@@ -99,8 +107,18 @@ void MainWindow::addFile(QString fileLocation, QString line) {
     textEdit->setFocusPolicy(Qt::ClickFocus);
     textEdit->setStyleSheet("color:white;");
     newTab->setLayout(l);
-    tabs->addTab(newTab,"Document");
-    textEdit->setText(line);
+    tabs->addTab(newTab,fileLocation);
+    if(fileLocation=="New Document") {
+        textEdit->setText(line);
+    } else {
+        QFile file(fileLocation);
+        if(file.open(QIODevice::ReadOnly)) {
+            QTextStream instream(&file);
+            QString line2 = instream.readAll();
+            file.close();
+            textEdit->setText(line2);
+        }
+    }
 }
 
 void MainWindow::newDocument() {
@@ -129,7 +147,7 @@ void MainWindow::newProject() {
     bool ok;
      QString text = QInputDialog::getText(ui->centralwidget, tr("Name your project"),
                                           tr("Project Name: "), QLineEdit::Normal,
-                                          QDir::home().dirName(), &ok);
+                                          "MyProject", &ok);
      if (ok && !text.isEmpty())
          MainWindow::setWindowTitle("Project" + text + " - TitaniumIDE");
 
@@ -187,7 +205,6 @@ void MainWindow::saveProject() {
 
 void MainWindow::openProject(QString fileAddress) {
     ui->tabWidget->clear();
-    qDebug() << fileAddress;
    QFile xmlFile(fileAddress);
    if (!xmlFile.open(QFile::ReadOnly | QFile::Text))
 {
@@ -257,9 +274,24 @@ void MainWindow::openProject(QString fileAddress) {
     xmlFile.close();
     ui->tabWidget->setCurrentIndex(currentindex);
 }
+void MainWindow::closeProject() {
+    projectDirectory = "";
+    projectName = "";
+    ui->tabWidget->clear();
+}
+
 QString MainWindow::projectDialog() {
     QFileDialog  *select = new QFileDialog();
     QString fileLocation = select->getOpenFileName(this,"Open","","Titanium IDE Project File (*.tIDE)");
     openProject(fileLocation);
     return fileLocation;
+}
+
+void MainWindow::renameFile() {
+     QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+                                          tr("New file name"), QLineEdit::Normal);
+     if(!text.isEmpty()) {
+        ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),projectDirectory+text);
+     }
+     saveProject();
 }
