@@ -22,8 +22,9 @@ private slots:
     void openProject(QString);
     void closeProject();
     QString projectDialog();
-    void addFile(QString, QString);
+    int addFile(QString, QString);
     void renameFile();
+    void closeEvent(QCloseEvent*);
 private:
     Ui::MainWindow *ui;
 };
