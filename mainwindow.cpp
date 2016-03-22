@@ -332,7 +332,7 @@ void MainWindow::openProject(QString fileAddress) {
 }
 void MainWindow::closeProject() {
     if(!isProject) {
-        //destroy session data at QStandardPaths::AppDataLocation
+        //destroy session
     }
         projectDirectory = "";
         projectName = "";
