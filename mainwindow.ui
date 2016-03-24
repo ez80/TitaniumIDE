@@ -110,14 +110,70 @@
    <string>TitaniumIDE</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color:rgb(25, 25, 25);</string>
+   <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="layoutDirection">
     <enum>Qt::LeftToRight</enum>
    </property>
    <property name="styleSheet">
-    <string notr="true"/>
+    <string notr="true">#centralwidget {
+background-color:rgb(25, 25, 25);
+}
+#buttons {
+background-color:rgb(88, 88, 88);
+}
+#toolbar {
+background-color:rgb(88, 88, 88);
+}
+QTabWidget::pane {
+border:none;
+}
+QTabBar::tab {
+    background:rgb(57, 57, 56);
+    border-style:groove;
+    border-left:none;
+    border-right:1px;
+    color:white;
+    min-width: 40ex;
+    min-height: 6ex;
+    padding: 2px;
+	font-family:&quot;Open Sans&quot;;
+}
+
+QTabBar::tab:selected {
+    background:rgb(82, 82, 82);
+}
+QTextEdit {
+color:white; border:none; background-color: rgb(17, 17, 17);
+}
+
+QToolButton {
+   background-color:none;
+   color:white;
+   font-family:&quot;Open Sans&quot;;
+}
+QToolButton:hover
+{
+   background-color:rgb(77, 77, 77);
+   color:white;
+   border: 0.5px solid rgb(38, 38, 38);
+   border-top-right-radius: 3px;
+   border-top-left-radius: 3px;
+   border-bottom-right-radius: 3px;
+   border-bottom-left-radius: 3px;
+}
+QToolButton:pressed
+{
+   background-color:rgb(55, 55, 55);
+   color:white;
+   border: 0.5px solid rgb(38, 38, 38);
+   border-top-right-radius: 3px;
+   border-top-left-radius: 3px;
+   border-bottom-right-radius: 3px;
+   border-bottom-left-radius: 3px;
+}
+</string>
    </property>
    <layout class="QGridLayout" name="gridLayout_2">
     <property name="leftMargin">
@@ -136,7 +192,7 @@
      <number>0</number>
     </property>
     <item row="0" column="0">
-     <widget class="QFrame" name="frame">
+     <widget class="QFrame" name="toolbar">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -156,14 +212,13 @@
        </size>
       </property>
       <property name="styleSheet">
-       <string notr="true">background-color:rgb(88, 88, 88);
-</string>
+       <string notr="true"/>
       </property>
       <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
+       <enum>QFrame::Sunken</enum>
       </property>
       <property name="lineWidth">
        <number>0</number>
@@ -185,7 +240,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QFrame" name="frame_4">
+        <widget class="QFrame" name="buttons">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -202,10 +257,10 @@
           <string notr="true"/>
          </property>
          <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
+          <enum>QFrame::NoFrame</enum>
          </property>
          <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
+          <enum>QFrame::Plain</enum>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <property name="spacing">
@@ -220,7 +275,8 @@
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">border:none;</string>
+             <string notr="true">border:none;
+background-color:none;</string>
             </property>
             <property name="text">
              <string/>
@@ -262,14 +318,7 @@
             </property>
             <property name="font">
              <font>
-              <family>Open Sans Light</family>
-              <pointsize>9</pointsize>
-              <weight>50</weight>
-              <italic>false</italic>
-              <bold>false</bold>
-              <strikeout>false</strikeout>
-              <stylestrategy>PreferDefault</stylestrategy>
-              <kerning>true</kerning>
+              <family>Open Sans</family>
              </font>
             </property>
             <property name="focusPolicy">
@@ -279,32 +328,7 @@
              <enum>Qt::NoContextMenu</enum>
             </property>
             <property name="styleSheet">
-             <string notr="true">#fileButton
-{
-   background-color:none;
-   color:white;
-}
-#fileButton:hover
-{
-   background-color:rgb(77, 77, 77);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-#fileButton:pressed
-{
-   background-color:rgb(55, 55, 55);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>File</string>
@@ -333,14 +357,7 @@
             </property>
             <property name="font">
              <font>
-              <family>Open Sans Light</family>
-              <pointsize>9</pointsize>
-              <weight>50</weight>
-              <italic>false</italic>
-              <bold>false</bold>
-              <strikeout>false</strikeout>
-              <stylestrategy>PreferDefault</stylestrategy>
-              <kerning>true</kerning>
+              <family>Open Sans</family>
              </font>
             </property>
             <property name="focusPolicy">
@@ -350,31 +367,7 @@
              <enum>Qt::NoContextMenu</enum>
             </property>
             <property name="styleSheet">
-             <string notr="true">#editButton {
-   background-color:none;
-   color:white;
-}
-#editButton:hover
-{
-   background-color:rgb(77, 77, 77);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-#editButton:pressed
-{
-   background-color:rgb(55, 55, 55);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>Edit</string>
@@ -403,14 +396,7 @@
             </property>
             <property name="font">
              <font>
-              <family>Open Sans Light</family>
-              <pointsize>9</pointsize>
-              <weight>50</weight>
-              <italic>false</italic>
-              <bold>false</bold>
-              <strikeout>false</strikeout>
-              <stylestrategy>PreferDefault</stylestrategy>
-              <kerning>true</kerning>
+              <family>Open Sans</family>
              </font>
             </property>
             <property name="focusPolicy">
@@ -420,31 +406,7 @@
              <enum>Qt::NoContextMenu</enum>
             </property>
             <property name="styleSheet">
-             <string notr="true">#languageButton {
-   background-color:none;
-   color:white;
-}
-#languageButton:hover
-{
-   background-color:rgb(77, 77, 77);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-#languageButton:pressed
-{
-   background-color:rgb(55, 55, 55);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>Language</string>
@@ -473,14 +435,7 @@
             </property>
             <property name="font">
              <font>
-              <family>Open Sans Light</family>
-              <pointsize>9</pointsize>
-              <weight>50</weight>
-              <italic>false</italic>
-              <bold>false</bold>
-              <strikeout>false</strikeout>
-              <stylestrategy>PreferDefault</stylestrategy>
-              <kerning>true</kerning>
+              <family>Open Sans</family>
              </font>
             </property>
             <property name="focusPolicy">
@@ -490,31 +445,7 @@
              <enum>Qt::NoContextMenu</enum>
             </property>
             <property name="styleSheet">
-             <string notr="true">#compileButton {
-   background-color:none;
-   color:white;
-}
-#compileButton:hover
-{
-   background-color:rgb(77, 77, 77);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-#compileButton:pressed
-{
-   background-color:rgb(55, 55, 55);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>Compile</string>
@@ -543,14 +474,7 @@
             </property>
             <property name="font">
              <font>
-              <family>Open Sans Light</family>
-              <pointsize>9</pointsize>
-              <weight>50</weight>
-              <italic>false</italic>
-              <bold>false</bold>
-              <strikeout>false</strikeout>
-              <stylestrategy>PreferDefault</stylestrategy>
-              <kerning>true</kerning>
+              <family>Open Sans</family>
              </font>
             </property>
             <property name="focusPolicy">
@@ -560,31 +484,7 @@
              <enum>Qt::NoContextMenu</enum>
             </property>
             <property name="styleSheet">
-             <string notr="true">#settingsButton {
-   background-color:none;
-   color:white;
-}
-#settingsButton:hover
-{
-   background-color:rgb(77, 77, 77);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-#settingsButton:pressed
-{
-   background-color:rgb(55, 55, 55);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>Settings</string>
@@ -613,14 +513,7 @@
             </property>
             <property name="font">
              <font>
-              <family>Open Sans Light</family>
-              <pointsize>9</pointsize>
-              <weight>50</weight>
-              <italic>false</italic>
-              <bold>false</bold>
-              <strikeout>false</strikeout>
-              <stylestrategy>PreferDefault</stylestrategy>
-              <kerning>true</kerning>
+              <family>Open Sans</family>
              </font>
             </property>
             <property name="focusPolicy">
@@ -630,31 +523,7 @@
              <enum>Qt::NoContextMenu</enum>
             </property>
             <property name="styleSheet">
-             <string notr="true">#helpButton {
-   background-color:none;
-   color:white;
-}
-#helpButton:hover
-{
-   background-color:rgb(77, 77, 77);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-#helpButton:pressed
-{
-   background-color:rgb(55, 55, 55);
-   color:white;
-   border: 0.5px solid rgb(38, 38, 38);
-   border-top-right-radius: 3px;
-   border-top-left-radius: 3px;
-   border-bottom-right-radius: 3px;
-   border-bottom-left-radius: 3px;
-}
-</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>Help</string>
@@ -686,26 +555,22 @@
          </layout>
         </widget>
        </item>
-       <item>
-        <widget class="Line" name="line">
-         <property name="styleSheet">
-          <string notr="true">margin-bottom:-2.51</string>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
     </item>
     <item row="1" column="0">
-     <widget class="QFrame" name="frame_2">
+     <widget class="QFrame" name="body">
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
       <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
+       <enum>QFrame::NoFrame</enum>
       </property>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
+      </property>
+      <property name="lineWidth">
+       <number>0</number>
       </property>
       <layout class="QGridLayout" name="gridLayout">
        <property name="leftMargin">
@@ -735,25 +600,10 @@
           <enum>Qt::StrongFocus</enum>
          </property>
          <property name="styleSheet">
-          <string notr="true">
-/* Style the tab using the tab sub-control. Note that
-    it reads QTabBar _not_ QTabWidget */
-QTabBar::tab {
-    background:rgb(57, 57, 56);
-    border-style:groove;
-    border-left:none;
-    border-right:1px;
-    color:white;
-    min-width: 40ex;
-    min-height: 6ex;
-    padding: 2px;
-	font-family:&quot;Open Sans&quot;;
-}
-
-QTabBar::tab:selected {
-    background:rgb(82, 82, 82);
-}
-</string>
+          <string notr="true"/>
+         </property>
+         <property name="tabShape">
+          <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex">
           <number>0</number>

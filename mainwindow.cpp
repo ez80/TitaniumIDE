@@ -43,7 +43,9 @@ MainWindow::MainWindow(QWidget *p) : QMainWindow(p), ui(new Ui::MainWindow) {
         QTextStream instream(&data);
         QString line2 = instream.readAll();
         data.close();
-        openProject(line2);
+        if(line2 !="") {
+            openProject(line2);
+        }
     }
 }
 
@@ -60,7 +62,7 @@ void MainWindow::fileMenuClicked() {
     QRect widgetRect = ui->centralwidget->geometry();
     widgetRect.moveTopLeft(ui->centralwidget->parentWidget()->mapToGlobal(widgetRect.topLeft()));
 
-    menu->move(widgetRect.topLeft().x() + p.x(), widgetRect.topLeft().y()+ ui->frame->size().height()-2);
+    menu->move(widgetRect.topLeft().x() + p.x(), widgetRect.topLeft().y()+ ui->toolbar->size().height()-2);
     QAction *newAction = menu->addAction("New File");
     connect(newAction, &QAction::triggered, this, &MainWindow::newDocument);
 
@@ -77,11 +79,11 @@ void MainWindow::fileMenuClicked() {
     QAction *projectOpen =  menu->addAction("Open Project");
     connect(projectOpen, &QAction::triggered, this, &MainWindow::projectDialog);
     if(isProject) {
-    QAction *saveAction = menu->addAction("Save Project");
-    connect(saveAction, &QAction::triggered, this, &MainWindow::saveProject);
+        QAction *saveAction = menu->addAction("Save Project");
+        connect(saveAction, &QAction::triggered, this, &MainWindow::saveProject);
 
-    QAction *closeAction = menu->addAction("Close Project");
-    connect(closeAction, &QAction::triggered, this, &MainWindow::closeProject);
+        QAction *closeAction = menu->addAction("Close Project");
+        connect(closeAction, &QAction::triggered, this, &MainWindow::closeProject);
     } else {
         QAction *saveAction = menu->addAction("Save All");
         connect(saveAction, &QAction::triggered, this, &MainWindow::saveProject);
@@ -155,7 +157,6 @@ void MainWindow::newDocument() {
     QWidget *newTab = new QWidget();
     QTextEdit *textEdit = new QTextEdit();
     newTab->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    textEdit->setStyleSheet("color:white; border:none;");
     textEdit->setFocusPolicy(Qt::ClickFocus);
     textEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     QLayout* layout = new QVBoxLayout(newTab);
@@ -174,38 +175,42 @@ void MainWindow::newProject() {
 
 
     bool ok;
-     QString text = QInputDialog::getText(ui->centralwidget, tr("Name your project"),
-                                          tr("Project Name: "), QLineEdit::Normal,
-                                          "MyProject", &ok);
-     if (ok && !text.isEmpty())
-         MainWindow::setWindowTitle("Project " + text + " - TitaniumIDE");
+    QString text = QInputDialog::getText(ui->centralwidget, tr("Name your project"),
+                                         tr("Project Name: "), QLineEdit::Normal,
+                                         "MyProject", &ok);
+    if (ok && !text.isEmpty()) {
 
-     QFileDialog *select = new QFileDialog();
-     QString line;
-     select->setLabelText(QFileDialog::Accept, QString("Project Location"));
-     QString fileLocation = select->getExistingDirectory(this,"Project Location");
+        QFileDialog *select = new QFileDialog();
+        QString line;
+        select->setLabelText(QFileDialog::Accept, QString("Project Location"));
+        QString fileLocation = select->getExistingDirectory(this,"Project Location");
+        if(fileLocation !="") {
+            projectDirectory=fileLocation+"/" +text+ "/";
+            QDir dir(projectDirectory);
+            if (!dir.exists()){
+                dir.mkdir(".");
+            }
+            QFile file(fileLocation+"/" +text+ "/" + text + ".tIDE");
+            if(file.open(QIODevice::WriteOnly)) {
 
-     projectDirectory=fileLocation+"/" +text+ "/";
-     QDir dir(projectDirectory);
-     if (!dir.exists()){
-       dir.mkdir(".");
-     }
-     projectName=text;
-     QFile file(fileLocation+"/" +text+ "/" + text + ".tIDE");
-     file.open(QIODevice::WriteOnly);
+                QXmlStreamWriter xmlWriter(&file);
+                xmlWriter.setAutoFormatting(true);
+                xmlWriter.writeStartDocument();
 
-     QXmlStreamWriter xmlWriter(&file);
-     xmlWriter.setAutoFormatting(true);
-     xmlWriter.writeStartDocument();
-
-     xmlWriter.writeStartElement("general");
-     xmlWriter.writeTextElement("pname", text);
-     xmlWriter.writeEndElement();
+                xmlWriter.writeStartElement("general");
+                xmlWriter.writeTextElement("pname", text);
+                xmlWriter.writeEndElement();
 
 
-     file.close();
-     newDocument();
-     isProject=true;
+                file.close();
+                newDocument();
+                isProject=true;
+                projectName=text;
+                MainWindow::setWindowTitle("Project " + projectName + " - TitaniumIDE");
+
+            }
+        }
+    }
 }
 void MainWindow::saveProject() {
     if(isProject) {
@@ -216,12 +221,12 @@ void MainWindow::saveProject() {
         xmlWriter.writeStartDocument();
         xmlWriter.writeStartElement("project");
         for(int c=0; c<(ui->tabWidget->count()); c++) {
-          xmlWriter.writeStartElement("file");
-          xmlWriter.writeTextElement("saved", "false");
-          xmlWriter.writeTextElement("name",  ui->tabWidget->tabToolTip(c));
-          xmlWriter.writeTextElement("text",  ui->tabWidget->widget(c)->findChild<QTextEdit*>()->toPlainText()+"");
-          xmlWriter.writeTextElement("lang",  "null");
-          xmlWriter.writeEndElement();
+            xmlWriter.writeStartElement("file");
+            xmlWriter.writeTextElement("saved", "false");
+            xmlWriter.writeTextElement("name",  ui->tabWidget->tabToolTip(c));
+            xmlWriter.writeTextElement("text",  ui->tabWidget->widget(c)->findChild<QTextEdit*>()->toPlainText()+"");
+            xmlWriter.writeTextElement("lang",  "null");
+            xmlWriter.writeEndElement();
         }
         xmlWriter.writeStartElement("general");
         xmlWriter.writeTextElement("pname", projectName);
@@ -239,12 +244,12 @@ void MainWindow::saveProject() {
         xmlWriter.writeStartDocument();
         xmlWriter.writeStartElement("project");
         for(int c=0; c<(ui->tabWidget->count()); c++) {
-          xmlWriter.writeStartElement("file");
-          xmlWriter.writeTextElement("saved", "false");
-          xmlWriter.writeTextElement("name",  ui->tabWidget->tabToolTip(c));
-          xmlWriter.writeTextElement("text",  ui->tabWidget->widget(c)->findChild<QTextEdit*>()->toPlainText()+"");
-          xmlWriter.writeTextElement("lang",  "null");
-          xmlWriter.writeEndElement();
+            xmlWriter.writeStartElement("file");
+            xmlWriter.writeTextElement("saved", "false");
+            xmlWriter.writeTextElement("name",  ui->tabWidget->tabToolTip(c));
+            xmlWriter.writeTextElement("text",  ui->tabWidget->widget(c)->findChild<QTextEdit*>()->toPlainText()+"");
+            xmlWriter.writeTextElement("lang",  "null");
+            xmlWriter.writeEndElement();
         }
         xmlWriter.writeStartElement("general");
         xmlWriter.writeTextElement("pname", "");
@@ -261,12 +266,12 @@ void MainWindow::saveProject() {
 void MainWindow::openProject(QString fileAddress) {
     isProject=true;
     ui->tabWidget->clear();
-   QFile xmlFile(fileAddress);
-   if (!xmlFile.open(QFile::ReadOnly | QFile::Text))
-{
+    QFile xmlFile(fileAddress);
+    if (!xmlFile.open(QFile::ReadOnly | QFile::Text))
+    {
 
-}
-   QXmlStreamReader xmlReader;
+    }
+    QXmlStreamReader xmlReader;
     xmlReader.setDevice(&xmlFile);
 
     int currentindex = 0;
@@ -276,53 +281,53 @@ void MainWindow::openProject(QString fileAddress) {
     QString lang;
     //Parse the XML until we reach end of it
     while(!xmlReader.atEnd() && !xmlReader.hasError()) {
-            // Read next element
-            QXmlStreamReader::TokenType token = xmlReader.readNext();
-            //If token is just StartDocument - go to next
-            if(token == QXmlStreamReader::StartDocument) {
-                    continue;
-            }
-            //If token is StartElement - read it
-            if(token == QXmlStreamReader::StartElement) {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader.readNext();
+        //If token is just StartDocument - go to next
+        if(token == QXmlStreamReader::StartDocument) {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement) {
 
-                    if(xmlReader.name() == "general") {
-                            continue;
-                    }
-
-                    if(xmlReader.name() == "pname") {
-                        projectName= xmlReader.readElementText();
-                        ui->centralwidget->setWindowTitle(projectName);
-                    }
-                    if(xmlReader.name()=="directory") {
-                        projectDirectory=xmlReader.readElementText();
-                    }
-                    if(xmlReader.name() == "currentfile") {
-                       currentindex = xmlReader.readElementText().toInt();
-                    }
-                    if(xmlReader.name() == "file") {
-                        continue;
-                    }
-                    if(xmlReader.name() == "saved") {
-                        saved = xmlReader.readElementText();
-                    }
-                    if(xmlReader.name() == "name") {
-                        name = xmlReader.readElementText();
-                    }
-                    if(xmlReader.name() == "text") {
-                        text = xmlReader.readElementText();
-                    }
-                    if(xmlReader.name() == "lang") {
-                        lang = xmlReader.readElementText();
-                        ui->tabWidget->setCurrentIndex(addFile(name,text));
-                    }
+            if(xmlReader.name() == "general") {
+                continue;
             }
+
+            if(xmlReader.name() == "pname") {
+                projectName= xmlReader.readElementText();
+                ui->centralwidget->setWindowTitle(projectName);
+            }
+            if(xmlReader.name()=="directory") {
+                projectDirectory=xmlReader.readElementText();
+            }
+            if(xmlReader.name() == "currentfile") {
+                currentindex = xmlReader.readElementText().toInt();
+            }
+            if(xmlReader.name() == "file") {
+                continue;
+            }
+            if(xmlReader.name() == "saved") {
+                saved = xmlReader.readElementText();
+            }
+            if(xmlReader.name() == "name") {
+                name = xmlReader.readElementText();
+            }
+            if(xmlReader.name() == "text") {
+                text = xmlReader.readElementText();
+            }
+            if(xmlReader.name() == "lang") {
+                lang = xmlReader.readElementText();
+                ui->tabWidget->setCurrentIndex(addFile(name,text));
+            }
+        }
     }
 
     if(xmlReader.hasError()) {
-            QMessageBox::critical(this,
-            "Project file corrupt!", "Unknown characters in file",
-            QMessageBox::Ok);
-            return;
+        QMessageBox::critical(this,
+                              "Project file corrupt!", "Unknown characters in file",
+                              QMessageBox::Ok);
+        return;
     }
 
     //close reader and flush file
@@ -334,11 +339,11 @@ void MainWindow::closeProject() {
     if(!isProject) {
         //destroy session
     }
-        projectDirectory = "";
-        projectName = "";
-        ui->tabWidget->clear();
-        isProject=false;
-        //check if saved (later)
+    projectDirectory = "";
+    projectName = "";
+    ui->tabWidget->clear();
+    isProject=false;
+    //check if saved (later)
 
 }
 
@@ -350,12 +355,13 @@ QString MainWindow::projectDialog() {
 }
 
 void MainWindow::renameFile() {
-     QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
-                                          tr("New file name"), QLineEdit::Normal);
-     if(!text.isEmpty()) {
+    QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+                                         tr("New file name"), QLineEdit::Normal);
+    if(!text.isEmpty()) {
         ui->tabWidget->setTabToolTip(ui->tabWidget->currentIndex(),projectDirectory+text);
-     }
-     saveProject();
+        ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),text);
+    }
+    saveProject();
 }
 
 void MainWindow::closeEvent (QCloseEvent *event)
@@ -365,7 +371,11 @@ void MainWindow::closeEvent (QCloseEvent *event)
     QFile data(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/quit.tiQ");
     if (data.open(QIODevice::WriteOnly | QIODevice::Text)){
         QTextStream stream(&data);
-        stream << projectDirectory+"/"+projectName+".tIDE";
+        if(isProject) {
+            stream << projectDirectory+"/"+projectName+".tIDE";
+        } else {
+            stream << "";
+        }
     }
     data.close();
 }
