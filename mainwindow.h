@@ -18,12 +18,14 @@ private slots:
     void save();
     void openDialog();
     void newProject();
+    void saveFile(QString,QString);
     void saveProject();
     void openProject(QString);
     void closeProject();
     QString projectDialog();
     int addFile(QString, QString);
-    void renameFile();
+    void renameFileDialog();
+    void renameFile(QString);
     void closeEvent(QCloseEvent*);
 private:
     Ui::MainWindow *ui;
