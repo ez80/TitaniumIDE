@@ -95,18 +95,34 @@ void MainWindow::fileMenuClicked() {
 }
 
 void MainWindow::save() {
-    QFileDialog *select = new QFileDialog();
-    QString line;
-    select->setLabelText(QFileDialog::Accept, QString("Save"));
-    QString fileLocation = select->getSaveFileName(this,"Save","","TI-84+CE Programming (*.asm *.c *.txt *.h *.inc)");
-    QFile data(fileLocation);
-    ui->textEdit->clear();
-    if (data.open(QIODevice::WriteOnly | QIODevice::Text)){
-        QTextStream stream(&data);
-        stream << ui->textEdit->toPlainText();
+    int currentIndex = ui->tabWidget->currentIndex();
+    QString text = ui->tabWidget->widget(currentIndex)->findChild<QTextEdit*>()->toPlainText()+"";
+    if(ui->tabWidget->tabText(currentIndex).contains("*")) {
+        if(ui->tabWidget->tabToolTip(currentIndex) == "New Document") {
+            if(isProject) {
+                renameFileDialog();
+                saveFile(ui->tabWidget->tabToolTip(currentIndex), text);
+            } else {
+                QFileDialog *select = new QFileDialog();
+                QString line;
+                select->setLabelText(QFileDialog::Accept, QString("Save"));
+                QString fileLocation = select->getSaveFileName(this,"Save","","TI-84+CE Programming (*.asm *.c *.txt *.h *.inc)");
+                saveFile(fileLocation, text);
+            }
+        } else {
+            saveFile(ui->tabWidget->tabToolTip(currentIndex), text);
+        }
     }
 }
-
+void MainWindow::saveFile(QString location, QString contents) {
+    QFile data(location);
+    QFileInfo fileInfo(data);
+    renameFile(fileInfo.fileName());
+    if (data.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream stream(&data);
+        stream << contents;
+    }
+}
 void MainWindow::openDialog() {
     QFileDialog  *select = new QFileDialog();
     QString fileLocation = select->getOpenFileName(this,"Open","","TI-84+CE Programming (*.asm *.c *.txt *.h *.inc)");
@@ -114,59 +130,70 @@ void MainWindow::openDialog() {
     if(file.open(QIODevice::ReadOnly)) {
         QTextStream instream(&file);
         QString line = instream.readAll();
+        if(isProject) {
+            QFileInfo fileInfo(file.fileName());
+            QString filename(fileInfo.fileName());
+            QFile data(projectDirectory+filename);
+            if (data.open(QIODevice::WriteOnly | QIODevice::Text)){
+                QTextStream stream(&data);
+                stream << line;
+            }
+            fileLocation=projectDirectory+filename;
+        }
         file.close();
         addFile(fileLocation, line);
     }
 }
 int MainWindow::addFile(QString fileLocation, QString line) {
+    bool openFile = true;
     int i =0;
-    QTabWidget *tabs = ui->tabWidget;
-    QWidget *newTab = new QWidget();
-    QTextEdit *textEdit = new QTextEdit();
-    newTab->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    textEdit->setStyleSheet("color:white; border:none;");
-    textEdit->setFocusPolicy(Qt::ClickFocus);
-    textEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    QLayout* layout = new QVBoxLayout(newTab);
-    layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(textEdit);
-
-    if(fileLocation=="New Document") {
-        textEdit->setText(line);
-        i = tabs->addTab(newTab, "New Document");
-        tabs->setTabToolTip(i, "New Document");
-    } else {
-        QFile file(fileLocation);
-        QFileInfo fileInfo(file.fileName());
-        QString filename(fileInfo.fileName());
-        i = tabs->addTab(newTab, filename);
-        tabs->setTabToolTip(i, fileLocation);
-        if(file.open(QIODevice::ReadOnly)) {
-            QTextStream instream(&file);
-            QString line2 = instream.readAll();
-            file.close();
-            textEdit->setText(line2);
+    for(int c=0; c<(ui->tabWidget->count()); c++) {
+        if(ui->tabWidget->tabToolTip(c)==fileLocation) {
+            openFile=false;
+            ui->tabWidget->setCurrentIndex(c);
+            break;
         }
     }
+    if(openFile || fileLocation=="New Document") {
+
+        QTabWidget *tabs = ui->tabWidget;
+        QWidget *newTab = new QWidget();
+        QTextEdit *textEdit = new QTextEdit();
+        newTab->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        textEdit->setStyleSheet("color:white; border:none;");
+        textEdit->setFocusPolicy(Qt::ClickFocus);
+        textEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        QLayout* layout = new QVBoxLayout(newTab);
+        layout->setSpacing(0);
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->addWidget(textEdit);
+
+        if(fileLocation=="New Document") {
+            textEdit->setText(line);
+            i = tabs->addTab(newTab, "New Document");
+            tabs->setTabToolTip(i, "New Document");
+        } else {
+            QFile file(fileLocation);
+            QFileInfo fileInfo(file.fileName());
+            QString filename(fileInfo.fileName());
+            i = tabs->addTab(newTab, filename);
+            tabs->setTabToolTip(i, fileLocation);
+            if(file.open(QIODevice::ReadOnly)) {
+                QTextStream instream(&file);
+                QString line2 = instream.readAll();
+                file.close();
+                textEdit->setText(line2);
+            }
+        }
+    } else {
+        i=-1;
+    }
+    ui->tabWidget->setCurrentIndex(i);
     return i;
 }
 
 void MainWindow::newDocument() {
-    QTabWidget *tabs = ui->tabWidget;
-    QWidget *newTab = new QWidget();
-    QTextEdit *textEdit = new QTextEdit();
-    newTab->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    textEdit->setFocusPolicy(Qt::ClickFocus);
-    textEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    QLayout* layout = new QVBoxLayout(newTab);
-    layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(textEdit);
-
-    int tabNumber = tabs->addTab(newTab,"New Document");
-    tabs->setTabToolTip(tabNumber,"New Document");
-    tabs->setCurrentIndex(tabNumber);
+    addFile("New Document","");
 }
 
 void MainWindow::newProject() {
@@ -213,54 +240,35 @@ void MainWindow::newProject() {
     }
 }
 void MainWindow::saveProject() {
+    QString projectLoc;
+
     if(isProject) {
-        QFile file(projectDirectory+"/" +projectName+ ".tIDE");
-        file.open(QIODevice::WriteOnly);
-        QXmlStreamWriter xmlWriter(&file);
-        xmlWriter.setAutoFormatting(true);
-        xmlWriter.writeStartDocument();
-        xmlWriter.writeStartElement("project");
-        for(int c=0; c<(ui->tabWidget->count()); c++) {
-            xmlWriter.writeStartElement("file");
-            xmlWriter.writeTextElement("saved", "false");
-            xmlWriter.writeTextElement("name",  ui->tabWidget->tabToolTip(c));
-            xmlWriter.writeTextElement("text",  ui->tabWidget->widget(c)->findChild<QTextEdit*>()->toPlainText()+"");
-            xmlWriter.writeTextElement("lang",  "null");
-            xmlWriter.writeEndElement();
-        }
-        xmlWriter.writeStartElement("general");
-        xmlWriter.writeTextElement("pname", projectName);
-        xmlWriter.writeTextElement("currentfile", QString::number(ui->tabWidget->currentIndex()));
-        xmlWriter.writeTextElement("directory", projectDirectory);
-        xmlWriter.writeEndElement();
-        xmlWriter.writeEndElement();
-        file.close();
-        //save all individual files.
+        projectLoc = projectDirectory;
     } else {
-        QFile file(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +"/session.tIDE");
-        file.open(QIODevice::WriteOnly);
-        QXmlStreamWriter xmlWriter(&file);
-        xmlWriter.setAutoFormatting(true);
-        xmlWriter.writeStartDocument();
-        xmlWriter.writeStartElement("project");
-        for(int c=0; c<(ui->tabWidget->count()); c++) {
-            xmlWriter.writeStartElement("file");
-            xmlWriter.writeTextElement("saved", "false");
-            xmlWriter.writeTextElement("name",  ui->tabWidget->tabToolTip(c));
-            xmlWriter.writeTextElement("text",  ui->tabWidget->widget(c)->findChild<QTextEdit*>()->toPlainText()+"");
-            xmlWriter.writeTextElement("lang",  "null");
-            xmlWriter.writeEndElement();
-        }
-        xmlWriter.writeStartElement("general");
-        xmlWriter.writeTextElement("pname", "");
-        xmlWriter.writeTextElement("currentfile", QString::number(ui->tabWidget->currentIndex()));
-        xmlWriter.writeTextElement("directory", projectDirectory);
-        xmlWriter.writeEndElement();
-        xmlWriter.writeEndElement();
-        file.close();
-
-
+        projectLoc = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +"/";
     }
+    QFile file(projectLoc +"session.tIDE");
+    file.open(QIODevice::WriteOnly);
+    QXmlStreamWriter xmlWriter(&file);
+    xmlWriter.setAutoFormatting(true);
+    xmlWriter.writeStartDocument();
+    xmlWriter.writeStartElement("project");
+    for(int c=0; c<(ui->tabWidget->count()); c++) {
+        xmlWriter.writeStartElement("file");
+        xmlWriter.writeTextElement("saved", QString::number(ui->tabWidget->tabText(c).contains("*")));
+        xmlWriter.writeTextElement("exists", "false");
+        xmlWriter.writeTextElement("name",  ui->tabWidget->tabToolTip(c));
+        xmlWriter.writeTextElement("text",  ui->tabWidget->widget(c)->findChild<QTextEdit*>()->toPlainText()+"");
+        xmlWriter.writeTextElement("lang",  "null");
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeStartElement("general");
+    xmlWriter.writeTextElement("pname", "");
+    xmlWriter.writeTextElement("currentfile", QString::number(ui->tabWidget->currentIndex()));
+    xmlWriter.writeTextElement("directory", projectDirectory);
+    xmlWriter.writeEndElement();
+    xmlWriter.writeEndElement();
+    file.close();
 }
 
 void MainWindow::openProject(QString fileAddress) {
@@ -279,6 +287,7 @@ void MainWindow::openProject(QString fileAddress) {
     QString name;
     QString text;
     QString lang;
+    QString exists;
     //Parse the XML until we reach end of it
     while(!xmlReader.atEnd() && !xmlReader.hasError()) {
         // Read next element
@@ -307,6 +316,9 @@ void MainWindow::openProject(QString fileAddress) {
             if(xmlReader.name() == "file") {
                 continue;
             }
+            if(xmlReader.name() == "exists") {
+                exists = xmlReader.readElementText();
+            }
             if(xmlReader.name() == "saved") {
                 saved = xmlReader.readElementText();
             }
@@ -318,7 +330,10 @@ void MainWindow::openProject(QString fileAddress) {
             }
             if(xmlReader.name() == "lang") {
                 lang = xmlReader.readElementText();
-                ui->tabWidget->setCurrentIndex(addFile(name,text));
+                QFile fileF(name);
+                if(fileF.exists() || exists=="false"){
+                    ui->tabWidget->setCurrentIndex(addFile(name,text));
+                }
             }
         }
     }
@@ -354,16 +369,21 @@ QString MainWindow::projectDialog() {
     return fileLocation;
 }
 
-void MainWindow::renameFile() {
+void MainWindow::renameFileDialog() {
     QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
                                          tr("New file name"), QLineEdit::Normal);
     if(!text.isEmpty()) {
-        ui->tabWidget->setTabToolTip(ui->tabWidget->currentIndex(),projectDirectory+text);
-        ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),text);
+        renameFile(text);
     }
     saveProject();
 }
-
+void MainWindow::renameFile(QString name) {
+    if(!name.isEmpty()) {
+        ui->tabWidget->setTabToolTip(ui->tabWidget->currentIndex(),projectDirectory+name);
+        ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),name);
+    }
+    saveProject();
+}
 void MainWindow::closeEvent (QCloseEvent *event)
 {
     saveProject();
