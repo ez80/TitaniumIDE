@@ -52,7 +52,6 @@ MainWindow::MainWindow(QWidget *p) : QMainWindow(p), ui(new Ui::MainWindow) {
 MainWindow::~MainWindow() {
     delete ui;
 }
-
 void MainWindow::fileMenuClicked() {
     QMenu *menu=new QMenu();
     menu->setObjectName("fileMenu");
@@ -70,7 +69,7 @@ void MainWindow::fileMenuClicked() {
     connect(openAction, &QAction::triggered, this, &MainWindow::openDialog);
 
     QAction *renameAction =  menu->addAction("Rename File");
-    connect(renameAction, &QAction::triggered, this, &MainWindow::renameFile);
+    connect(renameAction, &QAction::triggered, this, &MainWindow::renameFileDialog);
     menu->addSeparator();
 
     QAction *newProject = menu->addAction("New Project");
@@ -92,6 +91,7 @@ void MainWindow::fileMenuClicked() {
         connect(closeAction, &QAction::triggered, this, &MainWindow::closeProject);
     }
     menu->show();
+
 }
 
 void MainWindow::save() {
@@ -270,7 +270,6 @@ void MainWindow::saveProject() {
     xmlWriter.writeEndElement();
     file.close();
 }
-
 void MainWindow::openProject(QString fileAddress) {
     isProject=true;
     ui->tabWidget->clear();
@@ -378,7 +377,7 @@ void MainWindow::renameFileDialog() {
     saveProject();
 }
 void MainWindow::renameFile(QString name) {
-    if(!name.isEmpty()) {
+    if(name!="") {
         ui->tabWidget->setTabToolTip(ui->tabWidget->currentIndex(),projectDirectory+name);
         ui->tabWidget->setTabText(ui->tabWidget->currentIndex(),name);
     }
