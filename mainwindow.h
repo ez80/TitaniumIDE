@@ -23,7 +23,7 @@ private slots:
     void openProject(QString);
     void closeProject();
     QString projectDialog();
-    int addFile(QString, QString);
+    int addFile(QString, QString, bool);
     void renameFileDialog();
     void renameFile(QString);
     void closeEvent(QCloseEvent*);
@@ -31,4 +31,12 @@ private:
     Ui::MainWindow *ui;
 };
 
+
+struct TitaniumFile {
+    QString fileName;
+    QString filePath;
+    bool saved;
+    QString text;
+    int lang; //0 is no lang, 1 is asm, 2 is c, 3 is ti-basic.
+};
 #endif // MAINWINDOW_H

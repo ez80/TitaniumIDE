@@ -17,6 +17,8 @@
 QString projectDirectory;
 QString projectName;
 bool isProject=false;
+struct TitaniumFile;
+QHash<QString, TitaniumFile> files;
 MainWindow::MainWindow(QWidget *p) : QMainWindow(p), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
@@ -70,6 +72,10 @@ void MainWindow::fileMenuClicked() {
 
     QAction *renameAction =  menu->addAction("Rename File");
     connect(renameAction, &QAction::triggered, this, &MainWindow::renameFileDialog);
+
+    QAction *saveAction =  menu->addAction("Save File");
+    connect(saveAction, &QAction::triggered, this, &MainWindow::save);
+
     menu->addSeparator();
 
     QAction *newProject = menu->addAction("New Project");
@@ -141,10 +147,12 @@ void MainWindow::openDialog() {
             fileLocation=projectDirectory+filename;
         }
         file.close();
-        addFile(fileLocation, line);
+        addFile(fileLocation, line,true);
     }
 }
-int MainWindow::addFile(QString fileLocation, QString line) {
+int MainWindow::addFile(QString fileLocation, QString line, bool saved) {
+    QString filename;
+    QString line2;
     bool openFile = true;
     int i =0;
     for(int c=0; c<(ui->tabWidget->count()); c++) {
@@ -170,17 +178,25 @@ int MainWindow::addFile(QString fileLocation, QString line) {
 
         if(fileLocation=="New Document") {
             textEdit->setText(line);
-            i = tabs->addTab(newTab, "New Document");
+            QString tabTitle = "New Document";
+            if(!saved) {
+                tabTitle+="*";
+            }
+            i = tabs->addTab(newTab, tabTitle);
             tabs->setTabToolTip(i, "New Document");
         } else {
             QFile file(fileLocation);
             QFileInfo fileInfo(file.fileName());
-            QString filename(fileInfo.fileName());
-            i = tabs->addTab(newTab, filename);
+            filename = fileInfo.fileName();
+            QString tabTitle = filename;
+            if(!saved) {
+                tabTitle+="*";
+            }
+            i = tabs->addTab(newTab, tabTitle);
             tabs->setTabToolTip(i, fileLocation);
             if(file.open(QIODevice::ReadOnly)) {
                 QTextStream instream(&file);
-                QString line2 = instream.readAll();
+                line2 = instream.readAll();
                 file.close();
                 textEdit->setText(line2);
             }
@@ -189,11 +205,17 @@ int MainWindow::addFile(QString fileLocation, QString line) {
         i=-1;
     }
     ui->tabWidget->setCurrentIndex(i);
+    TitaniumFile t;
+    t.fileName = filename;
+    t.filePath = fileLocation;
+    t.saved = saved;
+    t.text = line2;
+    files.insert(fileLocation, t);
     return i;
 }
 
 void MainWindow::newDocument() {
-    addFile("New Document","");
+    addFile("New Document","",false);
 }
 
 void MainWindow::newProject() {
@@ -331,7 +353,8 @@ void MainWindow::openProject(QString fileAddress) {
                 lang = xmlReader.readElementText();
                 QFile fileF(name);
                 if(fileF.exists() || exists=="false"){
-                    ui->tabWidget->setCurrentIndex(addFile(name,text));
+
+                    ui->tabWidget->setCurrentIndex(addFile(name,text,(saved == "1" ? true : false)));
                 }
             }
         }
@@ -398,3 +421,4 @@ void MainWindow::closeEvent (QCloseEvent *event)
     }
     data.close();
 }
+
